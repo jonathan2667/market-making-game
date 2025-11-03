@@ -404,12 +404,203 @@
         }
 
         @media (max-width: 768px) {
-            .input-group {
-                grid-template-columns: 1fr;
+            /* Container and padding adjustments */
+            .container {
+                padding: 10px;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            /* Header adjustments */
+            .header {
+                padding: 20px 15px;
             }
             
             .header h1 {
-                font-size: 1.8em;
+                font-size: 1.5em;
+            }
+            
+            .header p {
+                font-size: 0.9em;
+            }
+            
+            .header button {
+                font-size: 0.9em;
+                padding: 10px 20px;
+                margin-top: 10px;
+            }
+            
+            /* Theory page mobile */
+            #theoryPage {
+                padding: 15px !important;
+            }
+            
+            #theoryPage h2 {
+                font-size: 1.3em;
+            }
+            
+            #theoryPage h3 {
+                font-size: 1.2em;
+            }
+            
+            #theoryPage h4 {
+                font-size: 1.1em;
+            }
+            
+            #theoryPage p, #theoryPage li {
+                font-size: 0.95em;
+                line-height: 1.6;
+            }
+            
+            /* Tables mobile - make scrollable */
+            #theoryPage table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                font-size: 0.85em;
+            }
+            
+            #theoryPage table td {
+                padding: 6px !important;
+            }
+            
+            /* Quick reference box */
+            .explanation-box {
+                padding: 15px;
+                font-size: 0.9em;
+            }
+            
+            /* Buttons in theory page */
+            #theoryPage .btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 1em;
+            }
+            
+            /* Scenario cards */
+            .scenario-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .scenario-card {
+                padding: 15px;
+            }
+            
+            .scenario-card h3 {
+                font-size: 1.1em;
+            }
+            
+            /* Start button mobile */
+            #scenarioSelect > div {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            
+            #startBtn {
+                width: 100%;
+                margin-top: 15px;
+                padding: 12px 20px !important;
+                font-size: 1em !important;
+            }
+            
+            /* Input groups */
+            .input-group {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .input-field input {
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            /* Game area */
+            .game-section {
+                padding: 15px;
+            }
+            
+            .game-section h3 {
+                font-size: 1.2em;
+            }
+            
+            /* Stats panel */
+            .stats-panel {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 12px;
+            }
+            
+            .stat-value {
+                font-size: 1.3em;
+            }
+            
+            /* Trade history */
+            .trade-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 12px;
+            }
+            
+            /* Questions */
+            .question-item {
+                padding: 15px;
+            }
+            
+            .question-item h4 {
+                font-size: 1em;
+            }
+            
+            /* Tooltips - adjust for mobile */
+            .tooltip .tooltiptext {
+                width: 200px;
+                font-size: 0.85em;
+            }
+            
+            /* Feedback boxes */
+            .feedback {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            
+            /* Buttons */
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.95em;
+            }
+            
+            /* Hide long text, show abbreviated version */
+            .mobile-hide {
+                display: none;
+            }
+            
+            /* Strategy feedback */
+            #strategyFeedback {
+                font-size: 0.9em;
+            }
+            
+            /* Trade response */
+            .trade-response {
+                padding: 15px;
+                font-size: 1em;
+            }
+            
+            /* Final summary adjustments */
+            .summary-section {
+                padding: 15px;
+            }
+            
+            /* Back to game button in theory */
+            #theoryPage > div:first-child {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+            
+            #theoryPage > div:first-child button {
+                margin-bottom: 15px;
             }
         }
     </style>
