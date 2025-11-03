@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Making Practice Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .scenario-select {
+            margin-bottom: 30px;
+        }
+
+        .scenario-select h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .scenario-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .scenario-card {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .scenario-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .scenario-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .scenario-card h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .scenario-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .game-area {
+            display: none;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .scenario-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .scenario-info h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .round-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .round-info h3 {
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .market-input {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .market-input h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-field label {
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .input-field input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .trade-history {
+            margin-top: 30px;
+        }
+
+        .trade-history h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .trade-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trade-item.long {
+            border-left: 4px solid #28a745;
+        }
+
+        .trade-item.short {
+            border-left: 4px solid #dc3545;
+        }
+
+        .trade-response {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        .trade-response.computer-buy {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .trade-response.computer-sell {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .question-section {
+            background: #e7f3ff;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 2px solid #2196F3;
+        }
+
+        .question-section h3 {
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+
+        .question-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .question-item h4 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .explanation-box {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .explanation-box h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .explanation-box p {
+            color: #856404;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #28a745, #20c997);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            transition: width 0.5s;
+        }
+
+        .help-icon {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8em;
+            cursor: help;
+            margin-left: 5px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #555;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .confidence-interval {
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Market Making Academy</h1>
+            <p>Master the art of market making through practice</p>
+            <button class="btn btn-secondary" onclick="showTheory()" style="margin-top: 15px; background: white; color: #667eea; border: 2px solid white;">
+                📚 Learn the Theory First
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- Theory Page -->
+            <div id="theoryPage" class="hidden" style="padding: 30px; background: white; border-radius: 15px; margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 style="color: #667eea;">📚 Market Making Theory Guide</h2>
+                    <button class="btn btn-secondary" onclick="hideTheory()">Back to Game</button>
+                </div>
+
+                <div style="line-height: 1.8;">
+                    <div class="explanation-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin-bottom: 30px;">
+                        <h3 style="color: white; margin-top: 0;">⚡ Quick Reference - Key Formulas</h3>
+                        <table style="width: 100%; color: white;">
+                            <tr>
+                                <td style="padding: 8px;"><strong>Position:</strong></td>
+                                <td style="padding: 8px;">Computer buys → You sold (-1) | Computer sells → You bought (+1)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><strong>Cash:</strong></td>
+                                <td style="padding: 8px;">Σ(Sells) - Σ(Buys)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><strong>Average Price:</strong></td>
+                                <td style="padding: 8px;">Cash ÷ |Position|</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><strong>Realized P&L:</strong></td>
+                                <td style="padding: 8px;">Sum of P&L from closed pairs (FIFO)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><strong>Unrealized P&L:</strong></td>
+                                <td style="padding: 8px;">For open longs: Σ(Value - Buy Price) | For open shorts: Σ(Sell Price - Value)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px;"><strong>Total P&L:</strong></td>
+                                <td style="padding: 8px;"><strong>Cash + (Position × True Value)</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <h3 style="color: #667eea; margin-top: 30px;">🎯 What is Market Making?</h3>
+                    <p><strong>Market making</strong> is when you quote both a <strong>BID</strong> (price you'll buy at) and an <strong>ASK</strong> (price you'll sell at) for an asset.</p>
+                    <p><strong>Example:</strong> You make a market "100 / 110"</p>
+                    <ul>
+                        <li><strong>Bid = 100</strong> → You buy at this price if someone sells to you</li>
+                        <li><strong>Ask = 110</strong> → You sell at this price if someone buys from you</li>
+                        <li><strong>Spread = 10</strong> → Your potential profit if you buy then sell</li>
+                    </ul>
+
+                    <h3 style="color: #667eea; margin-top: 30px;">📊 Questions You'll Answer (After Each Trade)</h3>
+
+                    <div class="explanation-box" style="margin: 20px 0;">
+                        <h4>1️⃣ Position</h4>
+                        <p><strong>What it is:</strong> Your net long or short exposure</p>
+                        <p><strong>How to calculate:</strong></p>
+                        <ul>
+                            <li>Start at 0</li>
+                            <li>Computer says "I buy" → You SOLD → Position -1 (short)</li>
+                            <li>Computer says "I sell" → You BOUGHT → Position +1 (long)</li>
+                            <li>Net position = Sum of all trades</li>
+                        </ul>
+                        <p><strong>Example:</strong> Computer buys, buys, sells → You're short 2, long 1 → Position = -1</p>
+                        <p><strong>Why it matters:</strong> Tells you your risk exposure!</p>
+                    </div>
+
+                    <div class="explanation-box" style="margin: 20px 0;">
+                        <h4>2️⃣ Cash</h4>
+                        <p><strong>What it is:</strong> Net cash from all your trades</p>
+                        <p><strong>Formula:</strong> Cash = Σ(Sells) - Σ(Buys)</p>
+                        <p><strong>Example:</strong></p>
+                        <ul>
+                            <li>Sold at 100 → +100 cash</li>
+                            <li>Sold at 150 → +150 cash</li>
+                            <li>Bought at 80 → -80 cash</li>
+                            <li><strong>Total Cash = 100 + 150 - 80 = 170</strong></li>
+                        </ul>
+                        <p><strong>Why it matters:</strong> Shows how much money you've collected vs spent!</p>
+                    </div>
+
+                    <div class="explanation-box" style="margin: 20px 0;">
+                        <h4>3️⃣ Average Trade Price</h4>
+                        <p><strong>What it is:</strong> The effective price you traded at</p>
+                        <p><strong>Formula:</strong> Average Price = Cash ÷ |Position|</p>
+                        <p><strong>Example (from above):</strong></p>
+                        <ul>
+                            <li>Cash = 170</li>
+                            <li>Position = -1 (short 1)</li>
+                            <li>Average = 170 ÷ 1 = <strong>170</strong></li>
+                        </ul>
+                        <p><strong>Interpretation:</strong> On average, you sold at 170 per unit</p>
+                        <p><strong>Why it matters:</strong> Quick way to see if you're happy with your trades! If true value is 160, selling at 170 is great!</p>
+                    </div>
+
+                    <div class="explanation-box" style="margin: 20px 0;">
+                        <h4>4️⃣ Realized P&L</h4>
+                        <p><strong>What it is:</strong> Profit/loss from CLOSED positions (round-trips)</p>
+                        <p><strong>How to calculate (FIFO - First In First Out):</strong></p>
+                        <ul>
+                            <li>Find pairs of opposite trades that close each other out</li>
+                            <li>Calculate P&L for each closed pair</li>
+                            <li>Sum them up</li>
+                        </ul>
+                        <p><strong>Example:</strong></p>
+                        <ul>
+                            <li>Trade 1: Bought at 100 (long +1)</li>
+                            <li>Trade 2: Bought at 120 (long +2)</li>
+                            <li>Trade 3: Sold at 90 (long +1) → Closes first buy!</li>
+                            <li>Realized P&L = 90 - 100 = <strong>-10 (loss)</strong></li>
+                            <li>Remaining open: Long at 120</li>
+                        </ul>
+                        <p><strong>Why it matters:</strong> This P&L is LOCKED IN regardless of true value!</p>
+                    </div>
+
+                    <div class="explanation-box" style="margin: 20px 0;">
+                        <h4>5️⃣ Unrealized P&L</h4>
+                        <p><strong>What it is:</strong> Profit/loss from OPEN positions at a given value</p>
+                        <p><strong>Formula:</strong></p>
+                        <ul>
+                            <li>For each long position: (Value - Buy price)</li>
+                            <li>For each short position: (Sell price - Value)</li>
+                            <li>Sum them up</li>
+                        </ul>
+                        <p><strong>Example (continuing from above):</strong></p>
+                        <ul>
+                            <li>Open: Long at 120</li>
+                            <li>If value = 130: Unrealized P&L = 130 - 120 = <strong>+10</strong></li>
+                            <li>If value = 110: Unrealized P&L = 110 - 120 = <strong>-10</strong></li>
+                        </ul>
+                        <p><strong>Why it matters:</strong> Shows your potential profit/loss if you closed now!</p>
+                    </div>
+
+                    <div class="explanation-box" style="margin: 20px 0;">
+                        <h4>💰 Quick Total P&L Formula</h4>
+                        <p><strong>Formula:</strong> Total P&L = Cash + (Position × True Value)</p>
+                        <p><strong>Example 1 (Short position):</strong></p>
+                        <ul>
+                            <li>You sold at 170 → Cash = +170</li>
+                            <li>Position = -1 (short 1 unit)</li>
+                            <li>True Value = 160</li>
+                            <li>P&L = 170 + (-1 × 160) = 170 - 160 = <strong>+10</strong> ✓</li>
+                        </ul>
+                        <p><strong>Why this works:</strong> You collected 170 cash. To close your short, you buy back at 160 (cost = -160). Net = +10 profit!</p>
+                        
+                        <p><strong>Example 2 (Long position):</strong></p>
+                        <ul>
+                            <li>You bought at 100 → Cash = -100</li>
+                            <li>Position = +1 (long 1 unit)</li>
+                            <li>True Value = 120</li>
+                            <li>P&L = -100 + (1 × 120) = -100 + 120 = <strong>+20</strong> ✓</li>
+                        </ul>
+                        <p><strong>Why this works:</strong> You paid 100 cash. To close your long, you sell at 120 (receive = +120). Net = +20 profit!</p>
+                        <p><em>This is the FASTEST way to calculate P&L!</em></p>
+                    </div>
+
+                    <h3 style="color: #667eea; margin-top: 30px;">📝 Complete Example - Follow Along!</h3>
+                    <div class="explanation-box" style="margin: 20px 0; background: #fff9e6; border-left: 5px solid #ffc107;">
+                        <h4>🦘 Scenario: Kangaroos in Australia (in millions)</h4>
+                        <p><em>You can play this exact scenario in the game! Look for "Kangaroos in Australia 🦘"</em></p>
+                        <p><strong>Your Markets & Computer Actions:</strong></p>
+                        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                            <tr style="background: #f0f0f0; font-weight: bold;">
+                                <td style="padding: 8px; border: 1px solid #ddd;">Round</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Your Market</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Computer Says</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">What YOU Did</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Price</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">1</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">20 - 25</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">I buy</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">SOLD</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">25</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">2</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">30 - 35</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">I buy</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">SOLD</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">35</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">3</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">40 - 45</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">I buy</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">SOLD</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">45</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">4</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">60 - 65</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">I sell</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">BOUGHT</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">60</td>
+                            </tr>
+                        </table>
+                        
+                        <p><strong>True Value = 42 million</strong></p>
+                        <hr style="margin: 15px 0;">
+                        
+                        <h4>Step 1: Calculate Position</h4>
+                        <ul>
+                            <li>Round 1: SOLD → Position = -1</li>
+                            <li>Round 2: SOLD → Position = -2</li>
+                            <li>Round 3: SOLD → Position = -3</li>
+                            <li>Round 4: BOUGHT → Position = -2</li>
+                        </ul>
+                        <p><strong>Final Position: -2 (short 2 units)</strong></p>
+                        
+                        <h4>Step 2: Calculate Cash</h4>
+                        <p>Cash = Σ(Sells) - Σ(Buys)</p>
+                        <ul>
+                            <li>Sold at 25 → +25</li>
+                            <li>Sold at 35 → +35</li>
+                            <li>Sold at 45 → +45</li>
+                            <li>Bought at 60 → -60</li>
+                        </ul>
+                        <p>Cash = 25 + 35 + 45 - 60 = <strong>45 million</strong></p>
+                        
+                        <h4>Step 3: Calculate Average Trade Price</h4>
+                        <p>Average = Cash ÷ |Position|</p>
+                        <p>Average = 45 ÷ 2 = <strong>22.5 million</strong></p>
+                        <p><em>This means you sold at an average price of 22.5 per unit!</em></p>
+                        
+                        <h4>Step 4: Calculate Realized P&L (FIFO)</h4>
+                        <p>We need to find closed pairs:</p>
+                        <ul>
+                            <li>Open positions (FIFO order): Short at 25, Short at 35, Short at 45</li>
+                            <li>Then bought at 60 → Closes the FIRST short (at 25)</li>
+                            <li>Realized P&L = 25 - 60 = <strong>-35</strong> (loss locked in)</li>
+                        </ul>
+                        <p>Remaining open: Short at 35, Short at 45</p>
+                        
+                        <h4>Step 5: Calculate Unrealized P&L</h4>
+                        <p><strong>Visual breakdown of all positions vs True Value (42):</strong></p>
+                        <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                            <tr style="background: #f0f0f0; font-weight: bold;">
+                                <td style="padding: 8px; border: 1px solid #ddd;">Position</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Price</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">vs True Value (42)</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">P&L</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Status</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Short</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">25</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">25 - 42 = -17</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; background: #ffebee;">-17</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; color: #666;">CLOSED by buy at 60</td>
+                            </tr>
+                            <tr style="background: #fff9e6;">
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>Short</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>35</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>35 - 42 = -7</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd; background: #ffebee;"><strong>-7</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>OPEN</strong></td>
+                            </tr>
+                            <tr style="background: #fff9e6;">
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>Short</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>45</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>45 - 42 = +3</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd; background: #e8f5e9;"><strong>+3</strong></td>
+                                <td style="padding: 8px; border: 1px solid #ddd;"><strong>OPEN</strong></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Long</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">60</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">42 - 60 = -18</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; background: #ffebee;">-18</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; color: #666;">CLOSED the short at 25</td>
+                            </tr>
+                        </table>
+                        
+                        <p><strong>Realized P&L (from closed pair):</strong> Short at 25, bought back at 60 = 25 - 60 = <strong>-35</strong></p>
+                        <p><strong>Unrealized P&L (from open positions):</strong> -7 + 3 = <strong>-4</strong></p>
+                        <p><strong>Note:</strong> If you look at ALL positions: -17 - 7 + 3 - 18 = -39, but we separate them into realized vs unrealized!</p>
+                        
+                        <h4>Step 6: Calculate Total P&L (Three Methods - All Give -39!)</h4>
+                        
+                        <p><strong>Method 1: Realized + Unrealized</strong></p>
+                        <p>Total = -35 + (-4) = <strong>-39 million</strong> ✓</p>
+                        
+                        <p><strong>Method 2: Quick Formula (Cash + Position × True Value)</strong></p>
+                        <p>P&L = Cash + (Position × True Value)</p>
+                        <p>P&L = 45 + (-2 × 42)</p>
+                        <p>P&L = 45 - 84 = <strong>-39 million</strong> ✓</p>
+                        
+                        <p><strong>Method 3: Using Average Price</strong></p>
+                        <p>P&L = |Position| × (Average Price - True Value) <em>[if short]</em></p>
+                        <p>P&L = 2 × (22.5 - 42)</p>
+                        <p>P&L = 2 × (-19.5) = <strong>-39 million</strong> ✓</p>
+                        <p><em>This works because you're short at average 22.5, but true value is 42!</em></p>
+                        
+                        <h4>🎯 What Went Wrong?</h4>
+                        <p style="color: #d32f2f;"><strong>You kept selling too low!</strong> Your average sell price was 22.5 million kangaroos, but the true population was 42 million. When you're short and need to buy back at 42, you lose money!</p>
+                        <p><strong>Better strategy:</strong> After round 1-2, the computer kept buying from you. This is a SIGNAL that your prices are too low. You should have moved your markets UP!</p>
+                        <p style="margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                            <strong>💡 Try it yourself!</strong> Play the "Kangaroos in Australia 🦘" scenario and see if you can do better than -39 million P&L! 
+                            Try making markets like 35-45, then 40-50 to capture the true value of 42.
+                        </p>
+                    </div>
+
+                    <h3 style="color: #667eea; margin-top: 30px;">🎯 Strategy Tips</h3>
+                    <div class="explanation-box">
+                        <p><strong>1. Learn from trades:</strong></p>
+                        <ul>
+                            <li>Computer buys from you → True value likely HIGHER than your ask</li>
+                            <li>Computer sells to you → True value likely LOWER than your bid</li>
+                            <li>Adjust your next market accordingly!</li>
+                        </ul>
+
+                        <p><strong>2. Manage your position:</strong></p>
+                        <ul>
+                            <li>Getting consistently long? You're pricing too HIGH → Lower your market</li>
+                            <li>Getting consistently short? You're pricing too LOW → Raise your market</li>
+                        </ul>
+
+                        <p><strong>3. Spread sizing:</strong></p>
+                        <ul>
+                            <li>Wide spread → Less confident, but protected if you're wrong</li>
+                            <li>Tight spread → More confident, captures more trades</li>
+                            <li>Start wide, tighten as you learn!</li>
+                        </ul>
+                    </div>
+
+                    <h3 style="color: #667eea; margin-top: 30px;">🧮 Common Mistakes to Avoid</h3>
+                    <div class="explanation-box">
+                        <p>❌ <strong>Mistake 1:</strong> "Computer says I buy" → Thinking YOU bought</p>
+                        <p>✅ <strong>Correct:</strong> Computer buys FROM you → YOU sold!</p>
+                        <br>
+                        <p>❌ <strong>Mistake 2:</strong> Calculating average by taking midpoints of markets</p>
+                        <p>✅ <strong>Correct:</strong> Average = Cash ÷ |Position| (only actual trade prices matter)</p>
+                        <br>
+                        <p>❌ <strong>Mistake 3:</strong> Not adjusting markets after getting hit consistently on one side</p>
+                        <p>✅ <strong>Correct:</strong> If you keep getting hit on ask, move your market UP!</p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 40px;">
+                        <button class="btn btn-primary" onclick="hideTheory()" style="padding: 15px 40px; font-size: 1.2em;">
+                            Ready to Practice! 🚀
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario Selection -->
+            <div id="scenarioSelect" class="scenario-select">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Choose Your Scenario</h2>
+                    <button class="btn btn-primary" onclick="startGame()" id="startBtn" disabled style="padding: 15px 40px; font-size: 1.1em;">Start Game →</button>
+                </div>
+                <div class="scenario-cards">
+                    <div class="scenario-card" onclick="selectScenario('eiffel')">
+                        <h3>🗼 Eiffel Tower Height</h3>
+                        <p>How tall is the Eiffel Tower in meters?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('boeing')">
+                        <h3>✈️ Boeing 747 Capacity</h3>
+                        <p>Maximum passenger capacity of a Boeing 747-400?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('olympic')">
+                        <h3>🥇 USA Olympic Golds</h3>
+                        <p>Total gold medals won by USA in Summer Olympics history?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('apple')">
+                        <h3>🍎 Apple Stores Worldwide</h3>
+                        <p>How many Apple retail stores exist globally?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('orbit')">
+                        <h3>🌍 Earth's Orbit</h3>
+                        <p>How many days does Earth take to orbit the Sun?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('bones')">
+                        <h3>🦴 Human Bones</h3>
+                        <p>How many bones in an adult human body?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('worldcup')">
+                        <h3>⚽ World Cup Winners</h3>
+                        <p>How many countries have won the FIFA World Cup?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('potter')">
+                        <h3>📚 Harry Potter Pages</h3>
+                        <p>Pages in the first Harry Potter book (US edition)?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('subway')">
+                        <h3>🚇 NYC Subway Stations</h3>
+                        <p>Total number of subway stations in New York City?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('pregnancy')">
+                        <h3>👶 Human Pregnancy</h3>
+                        <p>Typical duration of human pregnancy in weeks?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('week')">
+                        <h3>⏰ Minutes in a Week</h3>
+                        <p>How many minutes are there in one week?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('driving')">
+                        <h3>🚗 Left-Side Driving</h3>
+                        <p>How many countries drive on the left side of the road?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('harvard')">
+                        <h3>🎓 Harvard Tuition</h3>
+                        <p>Annual tuition at Harvard University in dollars?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('oscars')">
+                        <h3>🏆 Meryl Streep Oscars</h3>
+                        <p>How many Oscar nominations has she received?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('marathon')">
+                        <h3>🏃 Marathon Distance</h3>
+                        <p>Distance of a full marathon in kilometers?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('titanic')">
+                        <h3>🚢 Titanic Passengers</h3>
+                        <p>How many passengers on the Titanic's maiden voyage?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('google')">
+                        <h3>💼 Google Employees</h3>
+                        <p>Number of Google/Alphabet employees (thousands)?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('pyramid')">
+                        <h3>🔺 Great Pyramid Height</h3>
+                        <p>Original height of Great Pyramid in meters?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('chess')">
+                        <h3>♟️ Chess Squares</h3>
+                        <p>How many squares on a chess board?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('presidents')">
+                        <h3>🇺🇸 US Presidents</h3>
+                        <p>How many US presidents through 2024?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('disney_movies')">
+                        <h3>🎬 Disney Classics</h3>
+                        <p>Films in Disney's animated classics canon?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('burj')">
+                        <h3>🏢 Burj Khalifa Floors</h3>
+                        <p>Number of floors in the world's tallest building?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('football')">
+                        <h3>🏈 NFL Teams</h3>
+                        <p>How many teams in the NFL?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('spotify')">
+                        <h3>🎵 Spotify Users</h3>
+                        <p>Monthly active users in millions (2024)?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('space')">
+                        <h3>🚀 Astronauts on Moon</h3>
+                        <p>How many people have walked on the Moon?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('bitcoin')">
+                        <h3>₿ Bitcoin Max Supply</h3>
+                        <p>Maximum Bitcoin supply in millions?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('formula1')">
+                        <h3>🏎️ Monaco F1 Laps</h3>
+                        <p>Number of laps in Monaco Grand Prix?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('venice')">
+                        <h3>🛶 Venice Canals</h3>
+                        <p>How many canals in Venice, Italy?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('iphone')">
+                        <h3>📱 iPhone Max Storage</h3>
+                        <p>Maximum storage capacity in GB?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('wimbledon')">
+                        <h3>🎾 Federer Grand Slams</h3>
+                        <p>Roger Federer's Grand Slam titles?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('tesla_model')">
+                        <h3>⚡ Tesla 0-60 Speed</h3>
+                        <p>Tesla Model S Plaid 0-60 mph in tenths of seconds?</p>
+                    </div>
+                    <div class="scenario-card" onclick="selectScenario('netflix')">
+                        <h3>📺 Netflix Subscribers</h3>
+                        <p>Total subscribers in millions (2024)?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Area -->
+            <div id="gameArea" class="game-area">
+                <div class="scenario-info">
+                    <h2 id="scenarioTitle"></h2>
+                    <p id="scenarioDescription"></p>
+                </div>
+
+                <!-- Stats Panel -->
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <h4>Round</h4>
+                        <div class="value" id="currentRound">1</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Trades Made</h4>
+                        <div class="value" id="tradesCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Your Goal</h4>
+                        <div class="value" style="font-size: 1.2em;">📊</div>
+                    </div>
+                </div>
+
+                <!-- Phase 1: Confidence Interval -->
+                <div id="confidencePhase">
+                    <div class="market-input confidence-interval">
+                        <h3>Step 1: Set Your 95% Confidence Interval 
+                            <span class="tooltip">
+                                <span class="help-icon">?</span>
+                                <span class="tooltiptext">Make a wide interval where you're 95% confident the true answer lies. If someone trades at your bounds, your interval was too narrow!</span>
+                            </span>
+                        </h3>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label>Lower Bound (Bid)</label>
+                                <input type="number" id="confidenceLower" placeholder="e.g., 1000">
+                            </div>
+                            <div class="input-field">
+                                <label>Upper Bound (Ask)</label>
+                                <input type="number" id="confidenceUpper" placeholder="e.g., 10000">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="submitConfidenceInterval()">Submit Confidence Interval</button>
+                    </div>
+                </div>
+
+                <!-- Phase 2: Market Making Rounds -->
+                <div id="tradingPhase" class="hidden">
+                    <div class="round-info">
+                        <h3>Round <span id="roundNumber">1</span> of 5</h3>
+                        <p>Make a market with a <strong>maximum spread of <span id="maxSpreadDisplay">100</span></strong></p>
+                    </div>
+
+                    <div class="market-input">
+                        <h3>Make Your Market</h3>
+                        <div class="input-group">
+                            <div class="input-field">
+                                <label>Bid Price (You Buy At)</label>
+                                <input type="number" id="bidPrice" placeholder="e.g., 5000">
+                            </div>
+                            <div class="input-field">
+                                <label>Ask Price (You Sell At)</label>
+                                <input type="number" id="askPrice" placeholder="e.g., 5100">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="submitMarket()">Submit Market</button>
+                    </div>
+
+                    <div id="tradeResponse"></div>
+
+                    <!-- Round Questions -->
+                    <div id="roundQuestions" class="hidden">
+                        <div class="question-section" style="margin-top: 20px;">
+                            <h3>📚 Learning Questions - Round <span id="questionRoundNum"></span></h3>
+                            
+                            <!-- Question: Current Position -->
+                            <div class="question-item">
+                                <h4>What is your current net position?
+                                    <span class="tooltip">
+                                        <span class="help-icon">?</span>
+                                        <span class="tooltiptext">Net position = number of longs - number of shorts. Example: 2 buys and 1 sell = +1 position</span>
+                                    </span>
+                                </h4>
+                                <div class="input-field">
+                                    <input type="number" id="roundAnswerPosition" placeholder="Enter your position (e.g., -1, 0, +2)">
+                                </div>
+                                <button class="btn btn-primary" onclick="checkRoundPosition()">Check Answer</button>
+                                <div id="roundFeedbackPosition"></div>
+                            </div>
+
+                            <!-- Question: Cash -->
+                            <div class="question-item">
+                                <h4>How much net CASH do you have from all trades?
+                                    <span class="tooltip">
+                                        <span class="help-icon">?</span>
+                                        <span class="tooltiptext">Cash = money received from sells - money paid for buys. Example: Sold at 100, bought at 60 → Cash = 100 - 60 = 40</span>
+                                    </span>
+                                </h4>
+                                <div class="input-field">
+                                    <input type="number" id="roundAnswerCash" placeholder="Enter total cash">
+                                </div>
+                                <button class="btn btn-primary" onclick="checkRoundCash()">Check Answer</button>
+                                <div id="roundFeedbackCash"></div>
+                            </div>
+
+                            <!-- Question: Average Trade Price -->
+                            <div class="question-item">
+                                <h4>What is your average trade price?
+                                    <span class="tooltip">
+                                        <span class="help-icon">?</span>
+                                        <span class="tooltiptext">Average Price = Cash ÷ |Position|. This is the effective price at which you traded on average.</span>
+                                    </span>
+                                </h4>
+                                <div class="input-field">
+                                    <input type="number" id="roundAnswerAvgPrice" placeholder="Enter average price">
+                                </div>
+                                <button class="btn btn-primary" onclick="checkRoundAvgPrice()">Check Answer</button>
+                                <div id="roundFeedbackAvgPrice"></div>
+                            </div>
+
+                            <!-- Question: Realized P&L -->
+                            <div class="question-item">
+                                <h4>What is your current realized P&L (from closed round-trip trades)?
+                                    <span class="tooltip">
+                                        <span class="help-icon">?</span>
+                                        <span class="tooltiptext">Realized P&L = profit/loss from completed round-trip trades that are locked in regardless of true value. If you haven't closed any positions yet, it's 0.</span>
+                                    </span>
+                                </h4>
+                                <div class="input-field">
+                                    <input type="number" id="roundAnswerRealized" placeholder="Enter realized P&L">
+                                </div>
+                                <button class="btn btn-primary" onclick="checkRoundRealized()">Check Answer</button>
+                                <div id="roundFeedbackRealized"></div>
+                            </div>
+
+                            <!-- Question: Unrealized P&L -->
+                            <div class="question-item">
+                                <h4>If the true value is <span id="hintValueRound"></span>, what would be your unrealized P&L (from open positions)?
+                                    <span class="tooltip">
+                                        <span class="help-icon">?</span>
+                                        <span class="tooltiptext">Unrealized P&L = profit/loss from your open positions if you closed them at the given value. For long: (value - buy price). For short: (sell price - value).</span>
+                                    </span>
+                                </h4>
+                                <div class="input-field">
+                                    <input type="number" id="roundAnswerUnrealized" placeholder="Enter unrealized P&L">
+                                </div>
+                                <button class="btn btn-primary" onclick="checkRoundUnrealized()">Check Answer</button>
+                                <div id="roundFeedbackUnrealized"></div>
+                            </div>
+
+                            <!-- Strategy Question -->
+                            <div class="question-item">
+                                <h4>💡 Strategy Analysis: Learn from this trade</h4>
+                                <div id="strategyFeedback" class="explanation-box"></div>
+                            </div>
+
+                            <button class="btn btn-secondary" onclick="continueToNextRound()" style="margin-top: 15px;">Continue to Next Round</button>
+                        </div>
+                    </div>
+
+                    <!-- Trade History -->
+                    <div class="trade-history">
+                        <h3>Trade History</h3>
+                        <div id="tradeHistoryList"></div>
+                    </div>
+                </div>
+
+                <!-- Phase 3: Questions -->
+                <div id="questionPhase" class="hidden">
+                    <div class="question-section">
+                        <h3>📚 Final Questions - Calculate Your P&L!</h3>
+                        <p style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <strong>⚠️ Important:</strong> The true value will be revealed AFTER you calculate your total P&L!
+                        </p>
+                        
+                        <!-- Question 1: Position -->
+                        <div class="question-item">
+                            <h4>Question 1: What is your current position?
+                                <span class="tooltip">
+                                    <span class="help-icon">?</span>
+                                    <span class="tooltiptext">Count your net position: +1 for each buy (long), -1 for each sell (short). Example: 2 buys and 3 sells = -1 position</span>
+                                </span>
+                            </h4>
+                            <div class="input-field">
+                                <label>Your Position (e.g., -1 for short, +2 for long)</label>
+                                <input type="number" id="answerPosition" placeholder="Enter your position">
+                            </div>
+                            <button class="btn btn-primary" onclick="checkPosition()">Check Answer</button>
+                            <div id="feedbackPosition"></div>
+                        </div>
+
+                        <!-- Question 2: Max Guaranteed Loss -->
+                        <div class="question-item">
+                            <h4>Question 2: What is your maximum guaranteed loss?
+                                <span class="tooltip">
+                                    <span class="help-icon">?</span>
+                                    <span class="tooltiptext">This is the loss from closed round-trip trades that is locked in regardless of the true value. Don't include open positions!</span>
+                                </span>
+                            </h4>
+                            <div class="input-field">
+                                <label>Maximum Guaranteed Loss</label>
+                                <input type="number" id="answerMaxLoss" placeholder="Enter amount">
+                            </div>
+                            <button class="btn btn-primary" onclick="checkMaxLoss()">Check Answer</button>
+                            <div id="feedbackMaxLoss"></div>
+                        </div>
+
+                        <!-- Question 3: Total P&L Guess -->
+                        <div class="question-item">
+                            <h4>Question 3: Guess your total P&L!
+                                <span class="tooltip">
+                                    <span class="help-icon">?</span>
+                                    <span class="tooltiptext">Total P&L = Realized P&L (from closed trades) + Unrealized P&L (from open positions at true value). But you don't know the true value yet!</span>
+                                </span>
+                            </h4>
+                            <p><strong>Hint:</strong> Think about where the computer kept trading. That gives you clues about the true value!</p>
+                            <div class="input-field">
+                                <label>Your Total P&L Estimate</label>
+                                <input type="number" id="answerTotalPnL" placeholder="Enter your best guess">
+                            </div>
+                            <button class="btn btn-primary" onclick="checkTotalPnL()">Submit & Reveal True Value!</button>
+                            <div id="feedbackTotalPnL"></div>
+                        </div>
+
+                        <!-- Question 4: Break Even (appears after revealing) -->
+                        <div class="question-item hidden" id="breakEvenQuestion">
+                            <h4>Question 4: At what price can you break even?
+                                <span class="tooltip">
+                                    <span class="help-icon">?</span>
+                                    <span class="tooltiptext">Break-even price = Average remaining position price ± (Max Guaranteed Loss / |Position|)</span>
+                                </span>
+                            </h4>
+                            <div class="input-field">
+                                <label>Break-Even Price</label>
+                                <input type="number" id="answerBreakEven" placeholder="Enter price">
+                            </div>
+                            <button class="btn btn-primary" onclick="checkBreakEven()">Check Answer</button>
+                            <div id="feedbackBreakEven"></div>
+                        </div>
+
+                        <!-- Final Summary -->
+                        <div id="finalSummary" class="hidden">
+                            <div class="explanation-box">
+                                <h4>🎓 Complete Summary</h4>
+                                <div id="summaryContent"></div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="resetGame()" style="margin-top: 20px;">Try Another Scenario</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            selectedScenario: null,
+            trades: [],
+            currentRound: 0,
+            maxRounds: 5,
+            position: 0,
+            confidenceInterval: { lower: 0, upper: 0 },
+            scenarioData: null
+        };
+
+        // Scenario Definitions
+        const scenarios = {
+            eiffel: {
+                title: "Height of Eiffel Tower",
+                description: "Estimate the height of the Eiffel Tower in meters (including antenna).",
+                trueValue: 330,
+                maxSpread: 15,
+                unit: "meters"
+            },
+            boeing: {
+                title: "Boeing 747 Passenger Capacity",
+                description: "Estimate the maximum passenger capacity of a Boeing 747-400.",
+                trueValue: 416,
+                maxSpread: 20,
+                unit: "passengers"
+            },
+            olympic: {
+                title: "USA Olympic Gold Medals (Summer)",
+                description: "Estimate total gold medals won by USA in Summer Olympics history (through 2024).",
+                trueValue: 1070,
+                maxSpread: 50,
+                unit: "medals"
+            },
+            apple: {
+                title: "Apple Stores Worldwide",
+                description: "Estimate the number of Apple retail store locations worldwide.",
+                trueValue: 525,
+                maxSpread: 25,
+                unit: "stores"
+            },
+            orbit: {
+                title: "Earth's Orbit Around Sun",
+                description: "Estimate the number of days it takes Earth to orbit the Sun.",
+                trueValue: 365,
+                maxSpread: 15,
+                unit: "days"
+            },
+            bones: {
+                title: "Bones in Adult Human Body",
+                description: "Estimate the number of bones in an adult human body.",
+                trueValue: 206,
+                maxSpread: 10,
+                unit: "bones"
+            },
+            worldcup: {
+                title: "FIFA World Cup Winners",
+                description: "Estimate how many different countries have won the FIFA World Cup (through 2022).",
+                trueValue: 8,
+                maxSpread: 2,
+                unit: "countries"
+            },
+            potter: {
+                title: "Harry Potter Book 1 Pages",
+                description: "Estimate the number of pages in the first Harry Potter book (US edition).",
+                trueValue: 309,
+                maxSpread: 15,
+                unit: "pages"
+            },
+            subway: {
+                title: "NYC Subway Stations",
+                description: "Estimate the total number of subway stations in New York City.",
+                trueValue: 472,
+                maxSpread: 20,
+                unit: "stations"
+            },
+            pregnancy: {
+                title: "Weeks of Human Pregnancy",
+                description: "Estimate the typical duration of human pregnancy in weeks.",
+                trueValue: 40,
+                maxSpread: 2,
+                unit: "weeks"
+            },
+            week: {
+                title: "Minutes in a Week",
+                description: "Estimate the total number of minutes in one week.",
+                trueValue: 10080,
+                maxSpread: 100,
+                unit: "minutes"
+            },
+            driving: {
+                title: "Left-Side Driving Countries",
+                description: "Estimate how many countries drive on the left side of the road.",
+                trueValue: 78,
+                maxSpread: 4,
+                unit: "countries"
+            },
+            harvard: {
+                title: "Harvard Tuition (Annual)",
+                description: "Estimate annual tuition at Harvard University in US dollars.",
+                trueValue: 56550,
+                maxSpread: 500,
+                unit: "dollars"
+            },
+            oscars: {
+                title: "Meryl Streep Oscar Nominations",
+                description: "How many Oscar nominations has Meryl Streep received?",
+                trueValue: 21,
+                maxSpread: 2,
+                unit: "nominations"
+            },
+            marathon: {
+                title: "Marathon Distance (km)",
+                description: "Estimate the distance of a full marathon in kilometers.",
+                trueValue: 42,
+                maxSpread: 2,
+                unit: "km"
+            },
+            titanic: {
+                title: "Titanic Passengers",
+                description: "Estimate the number of passengers on the Titanic's maiden voyage.",
+                trueValue: 1317,
+                maxSpread: 50,
+                unit: "passengers"
+            },
+            google: {
+                title: "Google Employees",
+                description: "Estimate the number of Google/Alphabet employees worldwide (thousands).",
+                trueValue: 182,
+                maxSpread: 10,
+                unit: "thousand employees"
+            },
+            pyramid: {
+                title: "Great Pyramid Height",
+                description: "Estimate the original height of the Great Pyramid of Giza in meters.",
+                trueValue: 147,
+                maxSpread: 10,
+                unit: "meters"
+            },
+            chess: {
+                title: "Chess Squares",
+                description: "How many squares are on a standard chess board?",
+                trueValue: 64,
+                maxSpread: 3,
+                unit: "squares"
+            },
+            presidents: {
+                title: "US Presidents",
+                description: "How many US presidents have there been (through 2024)?",
+                trueValue: 46,
+                maxSpread: 2,
+                unit: "presidents"
+            },
+            disney_movies: {
+                title: "Disney Animated Classics",
+                description: "How many films are in Disney's official animated classics canon?",
+                trueValue: 62,
+                maxSpread: 3,
+                unit: "films"
+            },
+            burj: {
+                title: "Burj Khalifa Floors",
+                description: "Estimate the number of floors in the Burj Khalifa (world's tallest building).",
+                trueValue: 163,
+                maxSpread: 10,
+                unit: "floors"
+            },
+            football: {
+                title: "NFL Teams",
+                description: "How many teams are in the National Football League (NFL)?",
+                trueValue: 32,
+                maxSpread: 2,
+                unit: "teams"
+            },
+            spotify: {
+                title: "Spotify Monthly Users",
+                description: "Estimate Spotify's monthly active users in millions (2024).",
+                trueValue: 615,
+                maxSpread: 30,
+                unit: "million users"
+            },
+            space: {
+                title: "Astronauts on Moon",
+                description: "How many people have walked on the Moon?",
+                trueValue: 12,
+                maxSpread: 2,
+                unit: "people"
+            },
+            bitcoin: {
+                title: "Bitcoin Maximum Supply",
+                description: "Estimate the maximum number of Bitcoin that will ever exist (millions).",
+                trueValue: 21,
+                maxSpread: 2,
+                unit: "million BTC"
+            },
+            formula1: {
+                title: "F1 Race Laps (Monaco)",
+                description: "Estimate the number of laps in the Monaco Formula 1 Grand Prix.",
+                trueValue: 78,
+                maxSpread: 4,
+                unit: "laps"
+            },
+            venice: {
+                title: "Venice Canals",
+                description: "Estimate the number of canals in Venice, Italy.",
+                trueValue: 150,
+                maxSpread: 10,
+                unit: "canals"
+            },
+            iphone: {
+                title: "iPhone Storage (Max GB)",
+                description: "Estimate the maximum storage capacity of the latest iPhone in GB.",
+                trueValue: 1024,
+                maxSpread: 50,
+                unit: "GB"
+            },
+            wimbledon: {
+                title: "Wimbledon Championships",
+                description: "How many Grand Slam titles did Roger Federer win?",
+                trueValue: 20,
+                maxSpread: 2,
+                unit: "titles"
+            },
+            tesla_model: {
+                title: "Tesla Model S 0-60 mph",
+                description: "Estimate how many seconds for Tesla Model S Plaid 0-60 mph (tenths).",
+                trueValue: 19,
+                maxSpread: 2,
+                unit: "tenths of seconds"
+            },
+            netflix: {
+                title: "Netflix Subscribers",
+                description: "Estimate Netflix's total subscribers worldwide in millions (2024).",
+                trueValue: 280,
+                maxSpread: 15,
+                unit: "million subscribers"
+            },
+            kangaroos: {
+                title: "Kangaroos in Australia 🦘",
+                description: "Estimate the kangaroo population in Australia in millions. This is the EXAMPLE from the theory page - try to match those results!",
+                trueValue: 42,
+                maxSpread: 10,
+                unit: "million kangaroos"
+            }
+        };
+
+        function showTheory() {
+            document.getElementById('theoryPage').classList.remove('hidden');
+            document.getElementById('scenarioSelect').style.display = 'none';
+        }
+
+        function hideTheory() {
+            document.getElementById('theoryPage').classList.add('hidden');
+            document.getElementById('scenarioSelect').style.display = 'block';
+        }
+
+        function selectScenario(scenarioKey) {
+            gameState.selectedScenario = scenarioKey;
+            gameState.scenarioData = scenarios[scenarioKey];
+            
+            // Update UI
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.scenario-card').classList.add('selected');
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        function startGame() {
+            document.getElementById('scenarioSelect').style.display = 'none';
+            document.getElementById('gameArea').classList.add('active');
+            
+            const scenario = gameState.scenarioData;
+            document.getElementById('scenarioTitle').textContent = scenario.title;
+            document.getElementById('scenarioDescription').textContent = scenario.description;
+            document.getElementById('maxSpreadDisplay').textContent = scenario.maxSpread;
+        }
+
+        function submitConfidenceInterval() {
+            const lower = parseFloat(document.getElementById('confidenceLower').value);
+            const upper = parseFloat(document.getElementById('confidenceUpper').value);
+            
+            if (!lower || !upper || lower >= upper) {
+                alert('Please enter valid bounds where Lower < Upper');
+                return;
+            }
+            
+            gameState.confidenceInterval = { lower, upper };
+            
+            // Show feedback without revealing true value
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback correct';
+            feedback.style.marginTop = '20px';
+            
+            feedback.innerHTML = `
+                <strong>✅ Confidence Interval Set!</strong><br>
+                <p style="margin-top: 10px;">Your 95% confidence interval: [${lower}, ${upper}]</p>
+                <p>A good confidence interval should be wide enough to capture the true value about 95% of the time. 
+                You'll find out at the end if you captured it!</p>
+                <p style="margin-top: 15px;"><strong>Now let's practice market making with tighter spreads (max ${gameState.scenarioData.maxSpread}).</strong></p>
+                <button class="btn btn-primary" onclick="startTrading()" style="margin-top: 15px;">Start Market Making →</button>
+            `;
+            
+            document.getElementById('confidencePhase').appendChild(feedback);
+            
+            // Disable the original submit button
+            event.target.disabled = true;
+        }
+
+        function startTrading() {
+            document.getElementById('confidencePhase').style.display = 'none';
+            document.getElementById('tradingPhase').classList.remove('hidden');
+        }
+
+        function submitMarket() {
+            const bid = parseFloat(document.getElementById('bidPrice').value);
+            const ask = parseFloat(document.getElementById('askPrice').value);
+            
+            if (!bid || !ask) {
+                alert('Please enter both bid and ask prices');
+                return;
+            }
+            
+            const maxSpread = gameState.scenarioData.maxSpread;
+            const spread = ask - bid;
+            
+            if (spread > maxSpread) {
+                alert(`Spread must be ${maxSpread} or less!`);
+                return;
+            }
+            
+            if (spread < 0) {
+                alert('Ask must be greater than Bid!');
+                return;
+            }
+            
+            // Computer decides to trade
+            const trueValue = gameState.scenarioData.trueValue;
+            const mid = (bid + ask) / 2;
+            
+            let computerAction, price, direction;
+            
+            // Computer only trades when profitable
+            // Computer can BUY at your ASK if ask < true value (gets it cheaper than it's worth)
+            // Computer can SELL at your BID if bid > true value (sells it for more than it's worth)
+            
+            const canBuyProfitably = ask < trueValue;  // Computer buys from you at your ask
+            const canSellProfitably = bid > trueValue; // Computer sells to you at your bid
+            
+            if (canBuyProfitably && canSellProfitably) {
+                // Both sides profitable - pick the more profitable one
+                const buyProfit = trueValue - ask;
+                const sellProfit = bid - trueValue;
+                
+                if (buyProfit > sellProfit) {
+                    computerAction = "I buy";
+                    price = ask;
+                    direction = "short";
+                    gameState.position -= 1;
+                } else {
+                    computerAction = "I sell";
+                    price = bid;
+                    direction = "long";
+                    gameState.position += 1;
+                }
+            } else if (canBuyProfitably) {
+                // Only buying is profitable
+                computerAction = "I buy";
+                price = ask;
+                direction = "short";
+                gameState.position -= 1;
+            } else if (canSellProfitably) {
+                // Only selling is profitable
+                computerAction = "I sell";
+                price = bid;
+                direction = "long";
+                gameState.position += 1;
+            } else {
+                // Neither side profitable - pick the side closer to breakeven to give feedback
+                // This helps the user learn which direction to move their market
+                if (mid < trueValue) {
+                    // Market too low overall - computer buys to signal value is higher
+                    computerAction = "I buy";
+                    price = ask;
+                    direction = "short";
+                    gameState.position -= 1;
+                } else {
+                    // Market too high overall - computer sells to signal value is lower
+                    computerAction = "I sell";
+                    price = bid;
+                    direction = "long";
+                    gameState.position += 1;
+                }
+            }
+            
+            // Record trade with bid/ask for later analysis
+            gameState.trades.push({
+                round: gameState.currentRound + 1,
+                bid: bid,
+                ask: ask,
+                tradedPrice: price,
+                direction,
+                position: gameState.position
+            });
+            
+            // Show response - only show what the computer did, NO PRICE!
+            // Player must remember the price themselves
+            // Red when computer sells (you go long), green when computer buys (you go short)
+            const responseDiv = document.getElementById('tradeResponse');
+            responseDiv.innerHTML = `
+                <div class="trade-response ${direction === 'long' ? 'computer-sell' : 'computer-buy'}">
+                    <strong>${computerAction}</strong>
+                </div>
+            `;
+            
+            updateTradeHistory();
+            updateStats();
+            
+            // Show round questions
+            showRoundQuestions(bid, ask, price, direction);
+            
+            // Disable market input temporarily
+            document.getElementById('bidPrice').disabled = true;
+            document.getElementById('askPrice').disabled = true;
+            document.querySelector('#tradingPhase .btn-primary').disabled = true;
+        }
+
+        function showRoundQuestions(bid, ask, tradedPrice, direction) {
+            const roundQuestionsDiv = document.getElementById('roundQuestions');
+            roundQuestionsDiv.classList.remove('hidden');
+            
+            document.getElementById('questionRoundNum').textContent = gameState.currentRound + 1;
+            
+            // Set a hypothetical value for unrealized P&L practice (not the true value!)
+            const trueValue = gameState.scenarioData.trueValue;
+            // Generate random hypothetical value between 1-1000, but NOT close to true value
+            let hypotheticalValue;
+            const maxValue = Math.min(1000, trueValue * 10); // Scale based on true value
+            do {
+                hypotheticalValue = Math.floor(Math.random() * maxValue) + 1;
+            } while (Math.abs(hypotheticalValue - trueValue) < trueValue * 0.3); // Ensure it's NOT within 30% of true value
+            
+            document.getElementById('hintValueRound').textContent = hypotheticalValue;
+            gameState.hypotheticalValue = hypotheticalValue; // Store for checking
+            
+            // Generate strategy feedback WITHOUT revealing true value
+            const strategyDiv = document.getElementById('strategyFeedback');
+            const mid = (bid + ask) / 2;
+            
+            let strategyText = `<h4>📊 Your Market Analysis</h4>`;
+            strategyText += `<p><strong>Your Market:</strong> Bid ${bid} / Ask ${ask} (Mid: ${mid.toFixed(1)})</p>`;
+            strategyText += `<p><strong>What Happened:</strong> Computer ${direction === 'short' ? 'bought' : 'sold'} at ${tradedPrice}</p>`;
+            
+            strategyText += `<hr><h4>💡 What Can You Learn From This Trade?</h4>`;
+            
+            if (direction === 'short') {
+                // Computer bought from you (you're short)
+                strategyText += `<p><strong>Analysis:</strong> The computer bought at ${tradedPrice}. This means they think the true value is likely <strong>higher</strong> than ${tradedPrice}.</p>`;
+                strategyText += `<p><strong>Signal:</strong> You may be pricing too low.</p>`;
+                strategyText += `<p><strong>Next Market Strategy:</strong></p>`;
+                strategyText += `<p>• Consider moving your market <strong>higher</strong></p>`;
+                strategyText += `<p>• If you keep getting hit on your ask, you're likely underpricing</p>`;
+            } else {
+                // Computer sold to you (you're long)
+                strategyText += `<p><strong>Analysis:</strong> The computer sold at ${tradedPrice}. This means they think the true value is likely <strong>lower</strong> than ${tradedPrice}.</p>`;
+                strategyText += `<p><strong>Signal:</strong> You may be pricing too high.</p>`;
+                strategyText += `<p><strong>Next Market Strategy:</strong></p>`;
+                strategyText += `<p>• Consider moving your market <strong>lower</strong></p>`;
+                strategyText += `<p>• If you keep getting hit on your bid, you're likely overpricing</p>`;
+            }
+            
+            strategyText += `<hr><h4>🎯 Key Tips for Market Making:</h4>`;
+            strategyText += `<p>1. <strong>Learn from each trade:</strong> Use the direction of trades to update your estimate</p>`;
+            strategyText += `<p>2. <strong>Manage your position:</strong> Try to stay near flat (0 position) to minimize risk</p>`;
+            strategyText += `<p>3. <strong>Track realized P&L:</strong> When you complete a round-trip (buy then sell, or vice versa), that P&L is locked in</p>`;
+            strategyText += `<p>4. <strong>Avoid adverse selection:</strong> If you're always getting hit on one side, adjust your mid price!</p>`;
+            
+            strategyDiv.innerHTML = strategyText;
+            
+            // Clear previous answers
+            document.getElementById('roundAnswerPosition').value = '';
+            document.getElementById('roundAnswerCash').value = '';
+            document.getElementById('roundAnswerAvgPrice').value = '';
+            document.getElementById('roundAnswerRealized').value = '';
+            document.getElementById('roundAnswerUnrealized').value = '';
+            document.getElementById('roundFeedbackPosition').innerHTML = '';
+            document.getElementById('roundFeedbackCash').innerHTML = '';
+            document.getElementById('roundFeedbackAvgPrice').innerHTML = '';
+            document.getElementById('roundFeedbackRealized').innerHTML = '';
+            document.getElementById('roundFeedbackUnrealized').innerHTML = '';
+        }
+
+        function calculateCash() {
+            let cash = 0;
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'short') {
+                    // You sold = receive cash
+                    cash += trade.tradedPrice;
+                } else {
+                    // You bought = pay cash
+                    cash -= trade.tradedPrice;
+                }
+            });
+            return cash;
+        }
+
+        function checkRoundPosition() {
+            const userAnswer = parseInt(document.getElementById('roundAnswerPosition').value);
+            const correctAnswer = gameState.position;
+            const feedbackDiv = document.getElementById('roundFeedbackPosition');
+            
+            if (userAnswer === correctAnswer) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your current position is ${correctAnswer}.
+                    </div>
+                    <div class="explanation-box">
+                        <p><strong>Well done!</strong> Tracking your position is crucial for managing risk.</p>
+                        <p>• Positive position = Long (you own assets, profit if value goes up)</p>
+                        <p>• Negative position = Short (you owe assets, profit if value goes down)</p>
+                        <p>• Zero position = Flat (no exposure to price movement)</p>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct position is ${correctAnswer}.
+                    </div>
+                    <div class="explanation-box">
+                        <p><strong>How to track position:</strong></p>
+                        ${generatePositionExplanation()}
+                        <p><strong>Current position: ${correctAnswer}</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        function checkRoundCash() {
+            const userAnswer = parseFloat(document.getElementById('roundAnswerCash').value);
+            const correctAnswer = calculateCash();
+            const feedbackDiv = document.getElementById('roundFeedbackCash');
+            
+            const tolerance = 1;
+            if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your cash is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <p><strong>Great!</strong> Cash tracking is fundamental:</p>
+                        <p>• Cash = Σ(sells) - Σ(buys)</p>
+                        <p>• Positive cash = You received more than you paid</p>
+                        <p>• Negative cash = You paid more than you received</p>
+                    </div>
+                `;
+            } else {
+                let explanation = '<p><strong>How to calculate cash:</strong></p>';
+                let cashCalc = 0;
+                gameState.trades.forEach(trade => {
+                    if (trade.direction === 'short') {
+                        cashCalc += trade.tradedPrice;
+                        explanation += `<p>• Round ${trade.round}: SOLD at ${trade.tradedPrice} → +${trade.tradedPrice} cash</p>`;
+                    } else {
+                        cashCalc -= trade.tradedPrice;
+                        explanation += `<p>• Round ${trade.round}: BOUGHT at ${trade.tradedPrice} → -${trade.tradedPrice} cash</p>`;
+                    }
+                });
+                explanation += `<p><strong>Total cash: ${correctAnswer.toFixed(2)}</strong></p>`;
+                
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct answer is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        ${explanation}
+                    </div>
+                `;
+            }
+        }
+
+        function checkRoundAvgPrice() {
+            const userAnswer = parseFloat(document.getElementById('roundAnswerAvgPrice').value);
+            const cash = calculateCash();
+            const correctAnswer = gameState.position !== 0 ? cash / Math.abs(gameState.position) : 0;
+            const feedbackDiv = document.getElementById('roundFeedbackAvgPrice');
+            
+            const tolerance = 1;
+            if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your average trade price is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <p><strong>Perfect!</strong> Average price tells you the effective price you traded at.</p>
+                        <p>Formula: <strong>Average Price = Cash ÷ |Position|</strong></p>
+                        <p>Cash = ${cash.toFixed(2)}, Position = ${gameState.position}</p>
+                        <p>Average = ${cash.toFixed(2)} ÷ ${Math.abs(gameState.position)} = ${correctAnswer.toFixed(2)}</p>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct answer is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <p><strong>How to calculate average price:</strong></p>
+                        <p>Formula: <strong>Average Price = Cash ÷ |Position|</strong></p>
+                        <p>Your cash: ${cash.toFixed(2)}</p>
+                        <p>Your position: ${gameState.position}</p>
+                        <p>Average price: ${cash.toFixed(2)} ÷ ${Math.abs(gameState.position)} = <strong>${correctAnswer.toFixed(2)}</strong></p>
+                        <p><em>This represents the effective price at which you traded. If you're short ${Math.abs(gameState.position)}, you sold at an average of ${correctAnswer.toFixed(2)} per unit.</em></p>
+                    </div>
+                `;
+            }
+        }
+
+        function checkRoundRealized() {
+            const userAnswer = parseFloat(document.getElementById('roundAnswerRealized').value);
+            const correctAnswer = -calculateMaxGuaranteedLoss(); // Negative because it's a loss
+            const feedbackDiv = document.getElementById('roundFeedbackRealized');
+            
+            const tolerance = 1;
+            if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your realized P&L is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <p>Realized P&L comes from <strong>closed round-trip trades</strong> only. These gains/losses are locked in regardless of the true value.</p>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct answer is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <p>To calculate realized P&L, identify pairs of trades that closed each other out:</p>
+                        ${generateMaxLossExplanation()}
+                        <p>Realized P&L = <strong>${correctAnswer.toFixed(2)}</strong> (negative means loss)</p>
+                    </div>
+                `;
+            }
+        }
+
+        function checkRoundUnrealized() {
+            const userAnswer = parseFloat(document.getElementById('roundAnswerUnrealized').value);
+            const hypotheticalValue = gameState.hypotheticalValue;
+            
+            // Calculate unrealized P&L at hypothetical value
+            let unrealizedPnL = 0;
+            let openLongs = [];  
+            let openShorts = []; 
+            
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'long') {
+                    if (openShorts.length > 0) {
+                        openShorts.shift();
+                    } else {
+                        openLongs.push({price: trade.tradedPrice});
+                    }
+                } else {
+                    if (openLongs.length > 0) {
+                        openLongs.shift();
+                    } else {
+                        openShorts.push({price: trade.tradedPrice});
+                    }
+                }
+            });
+            
+            openLongs.forEach(pos => {
+                unrealizedPnL += (hypotheticalValue - pos.price);
+            });
+            openShorts.forEach(pos => {
+                unrealizedPnL += (pos.price - hypotheticalValue);
+            });
+            
+            const feedbackDiv = document.getElementById('roundFeedbackUnrealized');
+            const tolerance = 1;
+            
+            if (Math.abs(userAnswer - unrealizedPnL) < tolerance) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your unrealized P&L at value ${hypotheticalValue} is ${unrealizedPnL.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <p><strong>Great!</strong> You correctly calculated the P&L from your open positions.</p>
+                        <p>Remember: Unrealized P&L changes based on the value - it's not locked in until you close the position!</p>
+                    </div>
+                `;
+            } else {
+                let explanation = '<p><strong>How to calculate unrealized P&L:</strong></p>';
+                if (openLongs.length > 0) {
+                    explanation += '<p><strong>Open Long Positions:</strong></p>';
+                    openLongs.forEach(pos => {
+                        const pnl = hypotheticalValue - pos.price;
+                        explanation += `<p>• Long at ${pos.price}: ${hypotheticalValue} - ${pos.price} = ${pnl.toFixed(2)}</p>`;
+                    });
+                }
+                if (openShorts.length > 0) {
+                    explanation += '<p><strong>Open Short Positions:</strong></p>';
+                    openShorts.forEach(pos => {
+                        const pnl = pos.price - hypotheticalValue;
+                        explanation += `<p>• Short at ${pos.price}: ${pos.price} - ${hypotheticalValue} = ${pnl.toFixed(2)}</p>`;
+                    });
+                }
+                explanation += `<p><strong>Total Unrealized P&L = ${unrealizedPnL.toFixed(2)}</strong></p>`;
+                
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct answer is ${unrealizedPnL.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        ${explanation}
+                    </div>
+                `;
+            }
+        }
+
+        function continueToNextRound() {
+            // Hide round questions
+            document.getElementById('roundQuestions').classList.add('hidden');
+            
+            // Re-enable market input
+            document.getElementById('bidPrice').disabled = false;
+            document.getElementById('askPrice').disabled = false;
+            document.querySelector('#tradingPhase .btn-primary').disabled = false;
+            
+            // Clear inputs
+            document.getElementById('bidPrice').value = '';
+            document.getElementById('askPrice').value = '';
+            
+            gameState.currentRound++;
+            
+            if (gameState.currentRound >= gameState.maxRounds) {
+                // End trading, start final questions
+                setTimeout(() => {
+                    document.getElementById('tradingPhase').classList.add('hidden');
+                    document.getElementById('questionPhase').classList.remove('hidden');
+                }, 500);
+            } else {
+                document.getElementById('roundNumber').textContent = gameState.currentRound + 1;
+            }
+        }
+
+        function updateTradeHistory() {
+            const historyDiv = document.getElementById('tradeHistoryList');
+            historyDiv.innerHTML = '';
+            
+            gameState.trades.forEach(trade => {
+                const tradeDiv = document.createElement('div');
+                tradeDiv.className = `trade-item ${trade.direction}`;
+                tradeDiv.innerHTML = `
+                    <div>
+                        <strong>Round ${trade.round}:</strong> 
+                        ${trade.direction === 'long' ? 'BOUGHT' : 'SOLD'} at ${trade.tradedPrice}
+                    </div>
+                    <div>${trade.direction === 'long' ? '📈 Long' : '📉 Short'}</div>
+                `;
+                historyDiv.appendChild(tradeDiv);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('currentRound').textContent = gameState.currentRound + 1;
+            document.getElementById('tradesCount').textContent = gameState.trades.length;
+        }
+
+        function calculateMaxGuaranteedLoss() {
+            // Use FIFO (First In First Out) to calculate realized P&L
+            let openLongs = [];  // Queue of open long positions {price: X}
+            let openShorts = []; // Queue of open short positions {price: X}
+            let realizedPnL = 0;
+            
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'long') {
+                    // Buying
+                    if (openShorts.length > 0) {
+                        // Close the oldest short position (FIFO)
+                        const closedShort = openShorts.shift();
+                        const pnl = closedShort.price - trade.tradedPrice;
+                        realizedPnL += pnl;
+                    } else {
+                        // No shorts to close, open a new long
+                        openLongs.push({price: trade.tradedPrice});
+                    }
+                } else {
+                    // Selling
+                    if (openLongs.length > 0) {
+                        // Close the oldest long position (FIFO)
+                        const closedLong = openLongs.shift();
+                        const pnl = trade.tradedPrice - closedLong.price;
+                        realizedPnL += pnl;
+                    } else {
+                        // No longs to close, open a new short
+                        openShorts.push({price: trade.tradedPrice});
+                    }
+                }
+            });
+            
+            // Return only losses (negative P&L as positive number)
+            return realizedPnL < 0 ? Math.abs(realizedPnL) : 0;
+        }
+
+        function calculateBreakEven() {
+            const maxLoss = calculateMaxGuaranteedLoss();
+            
+            if (gameState.position === 0) {
+                return null; // Already flat
+            }
+            
+            // Get remaining open positions using FIFO
+            let openLongs = [];  
+            let openShorts = []; 
+            
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'long') {
+                    if (openShorts.length > 0) {
+                        openShorts.shift(); // Close oldest short
+                    } else {
+                        openLongs.push({price: trade.tradedPrice});
+                    }
+                } else {
+                    if (openLongs.length > 0) {
+                        openLongs.shift(); // Close oldest long
+                    } else {
+                        openShorts.push({price: trade.tradedPrice});
+                    }
+                }
+            });
+            
+            // Calculate average price of remaining open positions
+            let avgPrice;
+            if (gameState.position > 0) {
+                // We're long - calculate average of open longs
+                avgPrice = openLongs.reduce((sum, pos) => sum + pos.price, 0) / openLongs.length;
+                // Need to sell to break even: Must recover the realized loss
+                // Break-even = avgPrice + (maxLoss / position)
+                // Because we need to MAKE profit to offset the loss
+                return avgPrice + (maxLoss / Math.abs(gameState.position));
+            } else {
+                // We're short - calculate average of open shorts
+                avgPrice = openShorts.reduce((sum, pos) => sum + pos.price, 0) / openShorts.length;
+                // Need to buy to break even: Must recover the realized loss
+                // Break-even = avgPrice - (maxLoss / position)
+                // Because we sold high, need to buy back low to make profit
+                return avgPrice - (maxLoss / Math.abs(gameState.position));
+            }
+        }
+
+        function checkPosition() {
+            const userAnswer = parseInt(document.getElementById('answerPosition').value);
+            const correctAnswer = gameState.position;
+            const feedbackDiv = document.getElementById('feedbackPosition');
+            
+            if (userAnswer === correctAnswer) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your position is ${correctAnswer}.
+                    </div>
+                    <div class="explanation-box">
+                        <h4>📖 Explanation</h4>
+                        <p>Position tracking is fundamental to market making:</p>
+                        <p>• Each time you <strong>buy (computer sells to you)</strong>, you go +1 long</p>
+                        <p>• Each time you <strong>sell (computer buys from you)</strong>, you go -1 short</p>
+                        <p>Your trades: ${generatePositionExplanation()}</p>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct answer is ${correctAnswer}.
+                    </div>
+                    <div class="explanation-box">
+                        <h4>📖 How to Calculate Position</h4>
+                        <p>Let's walk through your trades:</p>
+                        <p>${generatePositionExplanation()}</p>
+                        <p><strong>Final position: ${correctAnswer}</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        function generatePositionExplanation() {
+            let explanation = '';
+            let runningPosition = 0;
+            
+            gameState.trades.forEach((trade, index) => {
+                if (trade.direction === 'long') {
+                    runningPosition += 1;
+                    explanation += `<br>Round ${trade.round}: You BOUGHT at ${trade.tradedPrice} → Position = ${runningPosition}`;
+                } else {
+                    runningPosition -= 1;
+                    explanation += `<br>Round ${trade.round}: You SOLD at ${trade.tradedPrice} → Position = ${runningPosition}`;
+                }
+            });
+            
+            return explanation;
+        }
+
+        function checkMaxLoss() {
+            const userAnswer = parseFloat(document.getElementById('answerMaxLoss').value);
+            const correctAnswer = calculateMaxGuaranteedLoss();
+            const feedbackDiv = document.getElementById('feedbackMaxLoss');
+            
+            const tolerance = 0.01;
+            if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your maximum guaranteed loss is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <h4>📖 Why This Matters</h4>
+                        <p>Maximum guaranteed loss comes from <strong>closed round-trip trades</strong> where you bought and sold (or vice versa).</p>
+                        <p>These losses are "locked in" regardless of what the true value turns out to be.</p>
+                        <p>${generateMaxLossExplanation()}</p>
+                    </div>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer}, but the correct answer is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <h4>📖 How to Calculate Maximum Guaranteed Loss</h4>
+                        <p>You need to identify <strong>closed round-trip trades</strong> and calculate their P&L.</p>
+                        ${generateMaxLossExplanation()}
+                        <p><strong>Total guaranteed loss: ${correctAnswer.toFixed(2)}</strong></p>
+                        <p><br><em>Common mistake: Don't just add/subtract all prices! You must pair up trades that close each other out.</em></p>
+                    </div>
+                `;
+            }
+        }
+
+        function generateMaxLossExplanation() {
+            let explanation = '<p><strong>Your closed round-trips (FIFO - First In First Out):</strong></p>';
+            
+            let openLongs = [];  
+            let openShorts = []; 
+            let pairNum = 1;
+            let totalLoss = 0;
+            
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'long') {
+                    // Buying
+                    if (openShorts.length > 0) {
+                        // Close the oldest short position
+                        const closedShort = openShorts.shift();
+                        const pnl = closedShort.price - trade.tradedPrice;
+                        
+                        explanation += `<p>Pair ${pairNum}: Sold at ${closedShort.price}, Bought at ${trade.tradedPrice}<br>`;
+                        explanation += `P&L = ${closedShort.price} - ${trade.tradedPrice} = ${pnl.toFixed(2)}`;
+                        
+                        if (pnl < 0) {
+                            explanation += ` → <strong>Loss of ${Math.abs(pnl).toFixed(2)}</strong>`;
+                            totalLoss += Math.abs(pnl);
+                        } else {
+                            explanation += ` → Gain of ${pnl.toFixed(2)}`;
+                        }
+                        explanation += `</p>`;
+                        pairNum++;
+                    } else {
+                        // Open a new long
+                        openLongs.push({price: trade.tradedPrice, round: trade.round});
+                    }
+                } else {
+                    // Selling
+                    if (openLongs.length > 0) {
+                        // Close the oldest long position
+                        const closedLong = openLongs.shift();
+                        const pnl = trade.tradedPrice - closedLong.price;
+                        
+                        explanation += `<p>Pair ${pairNum}: Bought at ${closedLong.price}, Sold at ${trade.tradedPrice}<br>`;
+                        explanation += `P&L = ${trade.tradedPrice} - ${closedLong.price} = ${pnl.toFixed(2)}`;
+                        
+                        if (pnl < 0) {
+                            explanation += ` → <strong>Loss of ${Math.abs(pnl).toFixed(2)}</strong>`;
+                            totalLoss += Math.abs(pnl);
+                        } else {
+                            explanation += ` → Gain of ${pnl.toFixed(2)}`;
+                        }
+                        explanation += `</p>`;
+                        pairNum++;
+                    } else {
+                        // Open a new short
+                        openShorts.push({price: trade.tradedPrice, round: trade.round});
+                    }
+                }
+            });
+            
+            const remainingPositions = openLongs.length + openShorts.length;
+            if (remainingPositions > 0) {
+                explanation += `<p><em>Remaining ${remainingPositions} open position(s) don't count toward guaranteed loss.</em></p>`;
+            }
+            
+            return explanation;
+        }
+
+        function checkTotalPnL() {
+            const userAnswer = parseFloat(document.getElementById('answerTotalPnL').value);
+            const trueValue = gameState.scenarioData.trueValue;
+            const maxLoss = calculateMaxGuaranteedLoss();
+            
+            // Calculate actual total P&L
+            let actualPnL = -maxLoss;
+            let openLongs = [];  
+            let openShorts = []; 
+            
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'long') {
+                    if (openShorts.length > 0) {
+                        openShorts.shift();
+                    } else {
+                        openLongs.push({price: trade.tradedPrice});
+                    }
+                } else {
+                    if (openLongs.length > 0) {
+                        openLongs.shift();
+                    } else {
+                        openShorts.push({price: trade.tradedPrice});
+                    }
+                }
+            });
+            
+            openLongs.forEach(pos => {
+                actualPnL += (trueValue - pos.price);
+            });
+            openShorts.forEach(pos => {
+                actualPnL += (pos.price - trueValue);
+            });
+            
+            const feedbackDiv = document.getElementById('feedbackTotalPnL');
+            const tolerance = 50; // More lenient since they're guessing
+            
+            let feedbackHTML = `
+                <div style="background: #f0f4ff; padding: 20px; border-radius: 10px; margin-top: 15px; border: 2px solid #667eea;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🎯 The True Value Is Revealed!</h3>
+                    <p style="font-size: 1.5em; background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                        <strong>True Value: ${trueValue} ${gameState.scenarioData.unit}</strong>
+                    </p>
+                    <hr style="margin: 15px 0;">
+            `;
+            
+            if (Math.abs(userAnswer - actualPnL) < tolerance) {
+                feedbackHTML += `
+                    <div class="feedback correct">
+                        <strong>✓ Excellent estimate!</strong> Your guess was ${userAnswer.toFixed(2)}, actual total P&L is ${actualPnL.toFixed(2)}.
+                        <p style="margin-top: 10px;">You were within ${Math.abs(userAnswer - actualPnL).toFixed(2)} of the correct answer!</p>
+                    </div>
+                `;
+            } else {
+                feedbackHTML += `
+                    <div class="feedback incorrect">
+                        <strong>Your guess:</strong> ${userAnswer.toFixed(2)}<br>
+                        <strong>Actual total P&L:</strong> ${actualPnL.toFixed(2)}<br>
+                        <strong>Difference:</strong> ${Math.abs(userAnswer - actualPnL).toFixed(2)}
+                    </div>
+                `;
+            }
+            
+            const cash = calculateCash();
+            
+            feedbackHTML += `
+                <div class="explanation-box">
+                    <h4>📊 P&L Breakdown</h4>
+                    <p><strong>Realized P&L (locked in):</strong> ${(-maxLoss).toFixed(2)}</p>
+                    <p><strong>Unrealized P&L (from open positions):</strong> ${(actualPnL + maxLoss).toFixed(2)}</p>
+                    <p><strong>Total P&L:</strong> ${actualPnL.toFixed(2)}</p>
+                    <hr style="margin: 10px 0;">
+                    <h4>💡 Quick P&L Calculation Method</h4>
+                    <p><strong>Formula: P&L = Cash + (Position × True Value)</strong></p>
+                    <p>Your cash: ${cash.toFixed(2)}</p>
+                    <p>Your position: ${gameState.position}</p>
+                    <p>True value: ${trueValue}</p>
+                    <p>P&L = ${cash.toFixed(2)} + (${gameState.position} × ${trueValue})</p>
+                    <p>P&L = ${cash.toFixed(2)} + ${(gameState.position * trueValue).toFixed(2)} = <strong>${(cash + gameState.position * trueValue).toFixed(2)}</strong> ✓</p>
+                    <p><em>This is the fastest way to calculate your total P&L!</em></p>
+                </div>
+            </div>
+            `;
+            
+            feedbackDiv.innerHTML = feedbackHTML;
+            
+            // Show break-even question
+            document.getElementById('breakEvenQuestion').classList.remove('hidden');
+        }
+
+        function checkBreakEven() {
+            const userAnswer = parseFloat(document.getElementById('answerBreakEven').value);
+            const correctAnswer = calculateBreakEven();
+            const feedbackDiv = document.getElementById('feedbackBreakEven');
+            
+            if (correctAnswer === null) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>Note:</strong> You have no open position, so break-even doesn't apply. Your P&L is already locked in!
+                    </div>
+                `;
+                showFinalSummary();
+                return;
+            }
+            
+            const tolerance = 5;
+            if (Math.abs(userAnswer - correctAnswer) < tolerance) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">
+                        <strong>✓ Correct!</strong> Your break-even price is approximately ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <h4>📖 Break-Even Formula</h4>
+                        <p>Break-even price = Average open position price ± (Max guaranteed loss ÷ |Position|)</p>
+                        ${generateBreakEvenExplanation(correctAnswer)}
+                    </div>
+                `;
+                showFinalSummary();
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback incorrect">
+                        <strong>✗ Incorrect.</strong> You answered ${userAnswer.toFixed(2)}, but the correct answer is ${correctAnswer.toFixed(2)}.
+                    </div>
+                    <div class="explanation-box">
+                        <h4>📖 How to Calculate Break-Even</h4>
+                        <p>The break-even point is where you can close your remaining position to offset your guaranteed loss.</p>
+                        ${generateBreakEvenExplanation(correctAnswer)}
+                    </div>
+                `;
+                showFinalSummary();
+            }
+        }
+
+        function generateBreakEvenExplanation(breakEvenPrice) {
+            const maxLoss = calculateMaxGuaranteedLoss();
+            
+            // Get open positions using FIFO
+            let openLongs = [];  
+            let openShorts = []; 
+            
+            gameState.trades.forEach(trade => {
+                if (trade.direction === 'long') {
+                    if (openShorts.length > 0) {
+                        openShorts.shift();
+                    } else {
+                        openLongs.push({price: trade.tradedPrice});
+                    }
+                } else {
+                    if (openLongs.length > 0) {
+                        openLongs.shift();
+                    } else {
+                        openShorts.push({price: trade.tradedPrice});
+                    }
+                }
+            });
+            
+            let avgPrice;
+            if (gameState.position > 0) {
+                avgPrice = openLongs.reduce((sum, pos) => sum + pos.price, 0) / openLongs.length;
+            } else {
+                avgPrice = openShorts.reduce((sum, pos) => sum + pos.price, 0) / openShorts.length;
+            }
+            
+            let explanation = `<p><strong>What is Break-Even?</strong></p>`;
+            explanation += `<p>Break-even is the price where you can close all remaining positions and have <strong>Total P&L = 0</strong>.</p>`;
+            explanation += `<hr style="margin: 10px 0;">`;
+            explanation += `<p><strong>Step 1:</strong> Your realized loss (locked in) = ${maxLoss.toFixed(2)}</p>`;
+            explanation += `<p><strong>Step 2:</strong> Your open position = ${gameState.position}</p>`;
+            explanation += `<p><strong>Step 3:</strong> Average price of open positions = ${avgPrice.toFixed(2)}</p>`;
+            
+            if (gameState.position > 0) {
+                explanation += `<p><strong>Step 4:</strong> You're LONG, so you need to SELL to break even.<br>`;
+                explanation += `To offset your ${maxLoss.toFixed(2)} loss, you must MAKE ${maxLoss.toFixed(2)} profit.<br>`;
+                explanation += `Profit per unit needed: ${maxLoss.toFixed(2)} ÷ ${Math.abs(gameState.position)} = ${(maxLoss / Math.abs(gameState.position)).toFixed(2)}<br>`;
+                explanation += `Break-even sell price = ${avgPrice.toFixed(2)} + ${(maxLoss / Math.abs(gameState.position)).toFixed(2)} = <strong>${breakEvenPrice.toFixed(2)}</strong></p>`;
+                explanation += `<p><em>Why ADD? Because you need to sell HIGHER than your buy price to make profit on longs!</em></p>`;
+            } else {
+                explanation += `<p><strong>Step 4:</strong> You're SHORT, so you need to BUY to break even.<br>`;
+                explanation += `To offset your ${maxLoss.toFixed(2)} loss, you must MAKE ${maxLoss.toFixed(2)} profit.<br>`;
+                explanation += `Profit per unit needed: ${maxLoss.toFixed(2)} ÷ ${Math.abs(gameState.position)} = ${(maxLoss / Math.abs(gameState.position)).toFixed(2)}<br>`;
+                explanation += `Break-even buy price = ${avgPrice.toFixed(2)} - ${(maxLoss / Math.abs(gameState.position)).toFixed(2)} = <strong>${breakEvenPrice.toFixed(2)}</strong></p>`;
+                explanation += `<p><em>Why SUBTRACT? Because you need to buy LOWER than your sell price to make profit on shorts!</em></p>`;
+            }
+            
+            return explanation;
+        }
+
+        function showFinalSummary() {
+            const trueValue = gameState.scenarioData.trueValue;
+            const maxLoss = calculateMaxGuaranteedLoss();
+            
+            // Calculate actual P&L with true value using FIFO
+            let actualPnL = -maxLoss;
+            
+            if (gameState.position !== 0) {
+                // Get open positions using FIFO
+                let openLongs = [];  
+                let openShorts = []; 
+                
+                gameState.trades.forEach(trade => {
+                    if (trade.direction === 'long') {
+                        if (openShorts.length > 0) {
+                            openShorts.shift();
+                        } else {
+                            openLongs.push({price: trade.tradedPrice});
+                        }
+                    } else {
+                        if (openLongs.length > 0) {
+                            openLongs.shift();
+                        } else {
+                            openShorts.push({price: trade.tradedPrice});
+                        }
+                    }
+                });
+                
+                // Calculate unrealized P&L
+                openLongs.forEach(pos => {
+                    actualPnL += (trueValue - pos.price);
+                });
+                openShorts.forEach(pos => {
+                    actualPnL += (pos.price - trueValue);
+                });
+            }
+            
+            const summaryDiv = document.getElementById('summaryContent');
+            summaryDiv.innerHTML = `
+                <h3 style="color: #667eea; margin-bottom: 15px;">🎯 The Answer is Revealed!</h3>
+                <p style="font-size: 1.3em; background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <strong>True Value: ${trueValue} ${gameState.scenarioData.unit}</strong>
+                </p>
+                <p><strong>Your Confidence Interval:</strong> [${gameState.confidenceInterval.lower}, ${gameState.confidenceInterval.upper}] 
+                    ${(trueValue >= gameState.confidenceInterval.lower && trueValue <= gameState.confidenceInterval.upper) ? '✅ (Captured!)' : '❌ (Missed!)'}</p>
+                <hr style="margin: 15px 0;">
+                <h4>📊 Your Performance Analysis</h4>
+                <p><strong>Final Position:</strong> ${gameState.position}</p>
+                <p><strong>Realized P&L (Guaranteed Loss):</strong> ${(-maxLoss).toFixed(2)}</p>
+                <p><strong>Unrealized P&L (from open positions):</strong> ${(actualPnL + maxLoss).toFixed(2)}</p>
+                <p><strong>Total P&L:</strong> ${actualPnL.toFixed(2)}</p>
+                <hr style="margin: 15px 0;">
+                <h4>💡 What Could You Have Done Better?</h4>
+                ${generateBetterStrategyAdvice(trueValue)}
+                <hr style="margin: 15px 0;">
+                <h4>🎓 Key Takeaways:</h4>
+                <p>• <strong>Realized P&L</strong> = Losses from closed round-trips that are locked in</p>
+                <p>• <strong>Unrealized P&L</strong> = P&L from open positions (depends on true value)</p>
+                <p>• <strong>Adverse selection</strong> happens when you're consistently wrong about the value</p>
+                <p>• Always use each trade as information to update your estimate!</p>
+            `;
+            
+            document.getElementById('finalSummary').classList.remove('hidden');
+        }
+
+        function generateBetterStrategyAdvice(trueValue) {
+            let advice = '';
+            const avgMid = gameState.trades.reduce((sum, t) => sum + ((t.bid + t.ask) / 2 || t.tradedPrice), 0) / gameState.trades.length;
+            
+            advice += `<p><strong>Your average market mid:</strong> ${avgMid.toFixed(1)}</p>`;
+            advice += `<p><strong>True value:</strong> ${trueValue}</p>`;
+            
+            if (Math.abs(avgMid - trueValue) < 100) {
+                advice += `<p><strong>✅ Great job!</strong> You were very close to the true value. Your markets were well-calibrated!</p>`;
+            } else if (avgMid < trueValue) {
+                advice += `<p><strong>⚠️ You were pricing too low.</strong> The true value was ${(trueValue - avgMid).toFixed(0)} higher than your average mid.</p>`;
+                advice += `<p><strong>What happened:</strong> You likely kept getting short (computer buying from you), which should have been a signal to raise your prices.</p>`;
+                advice += `<p><strong>Better strategy:</strong> When you notice you're consistently getting hit on your ask, move your entire market upward!</p>`;
+            } else {
+                advice += `<p><strong>⚠️ You were pricing too high.</strong> The true value was ${(avgMid - trueValue).toFixed(0)} lower than your average mid.</p>`;
+                advice += `<p><strong>What happened:</strong> You likely kept getting long (computer selling to you), which should have been a signal to lower your prices.</p>`;
+                advice += `<p><strong>Better strategy:</strong> When you notice you're consistently getting hit on your bid, move your entire market downward!</p>`;
+            }
+            
+            return advice;
+        }
+
+        function resetGame() {
+            gameState = {
+                selectedScenario: null,
+                trades: [],
+                currentRound: 0,
+                maxRounds: 5,
+                position: 0,
+                confidenceInterval: { lower: 0, upper: 0 },
+                scenarioData: null
+            };
+            
+            // Reset UI
+            document.getElementById('scenarioSelect').style.display = 'block';
+            document.getElementById('gameArea').classList.remove('active');
+            document.getElementById('confidencePhase').style.display = 'block';
+            document.getElementById('tradingPhase').classList.add('hidden');
+            document.getElementById('questionPhase').classList.add('hidden');
+            document.getElementById('finalSummary').classList.add('hidden');
+            document.getElementById('roundQuestions').classList.add('hidden');
+            
+            // Re-enable inputs
+            document.getElementById('bidPrice').disabled = false;
+            document.getElementById('askPrice').disabled = false;
+            const submitBtn = document.querySelector('#tradingPhase .btn-primary');
+            if (submitBtn) submitBtn.disabled = false;
+            
+            // Clear all inputs and feedback
+            document.getElementById('confidenceLower').value = '';
+            document.getElementById('confidenceUpper').value = '';
+            document.getElementById('bidPrice').value = '';
+            document.getElementById('askPrice').value = '';
+            document.getElementById('answerPosition').value = '';
+            document.getElementById('answerMaxLoss').value = '';
+            document.getElementById('answerTotalPnL').value = '';
+            document.getElementById('answerBreakEven').value = '';
+            document.getElementById('roundAnswerPosition').value = '';
+            document.getElementById('roundAnswerCash').value = '';
+            document.getElementById('roundAnswerAvgPrice').value = '';
+            document.getElementById('roundAnswerRealized').value = '';
+            document.getElementById('roundAnswerUnrealized').value = '';
+            
+            document.getElementById('feedbackPosition').innerHTML = '';
+            document.getElementById('feedbackMaxLoss').innerHTML = '';
+            document.getElementById('feedbackTotalPnL').innerHTML = '';
+            document.getElementById('feedbackBreakEven').innerHTML = '';
+            document.getElementById('tradeResponse').innerHTML = '';
+            document.getElementById('tradeHistoryList').innerHTML = '';
+            document.getElementById('roundFeedbackPosition').innerHTML = '';
+            document.getElementById('roundFeedbackCash').innerHTML = '';
+            document.getElementById('roundFeedbackAvgPrice').innerHTML = '';
+            document.getElementById('roundFeedbackRealized').innerHTML = '';
+            document.getElementById('roundFeedbackUnrealized').innerHTML = '';
+            
+            // Hide break even question initially
+            document.getElementById('breakEvenQuestion').classList.add('hidden');
+            
+            // Clear scenario selection
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('startBtn').disabled = true;
+            
+            updateStats();
+        }
+    </script>
+</body>
+</html>
