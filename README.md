@@ -90,7 +90,11 @@ True Value: 42 million kangaroos
 
 - **Single-file application**: Pure HTML/CSS/JavaScript
 - **No dependencies**: Works offline, no framework needed
-- **Responsive design**: Works on desktop and mobile
+- **📱 Fully Mobile-Friendly**: Optimized responsive design for phones and tablets
+  - Touch-friendly buttons and inputs
+  - Scrollable tables for theory examples
+  - Readable text sizes on small screens
+  - Vertical layouts for narrow displays
 - **Local storage**: Game state persists in browser
 
 ## 🎮 Scenarios
